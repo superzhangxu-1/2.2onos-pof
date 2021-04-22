@@ -55,10 +55,21 @@ import org.onosproject.core.Version;
 import org.onosproject.event.Change;
 import org.onosproject.floodlightpof.protocol.OFMatch20;//modified on 4/9
 import org.onosproject.floodlightpof.protocol.OFMatchX;
-import org.onosproject.floodlightpof.protocol.action.*;
+//import org.onosproject.floodlightpof.protocol.action.*;
+import org.onosproject.floodlightpof.protocol.action.OFAction;
+import org.onosproject.floodlightpof.protocol.action.OFActionAddField;
+import org.onosproject.floodlightpof.protocol.action.OFActionCounter;
+import org.onosproject.floodlightpof.protocol.action.OFActionDeleteField;
+import org.onosproject.floodlightpof.protocol.action.OFActionDrop;
+import org.onosproject.floodlightpof.protocol.action.OFActionModifyField;
+import org.onosproject.floodlightpof.protocol.action.OFActionOutput;
+import org.onosproject.floodlightpof.protocol.action.OFActionPacketIn;
+import org.onosproject.floodlightpof.protocol.action.OFActionSetField;
+import org.onosproject.floodlightpof.protocol.action.OFActionType;//add on 4/21
 import org.onosproject.floodlightpof.protocol.instruction.OFInstructionApplyActions;
 import org.onosproject.floodlightpof.protocol.instruction.OFInstructionGotoTable;
 import org.onosproject.floodlightpof.protocol.instruction.OFInstructionType;
+import org.onosproject.floodlightpof.protocol.table.OFTableType;//add on 4/22
 import org.onosproject.mastership.MastershipTerm;
 import org.onosproject.net.Annotations;
 import org.onosproject.net.ChannelSpacing;
@@ -288,6 +299,7 @@ import org.onosproject.net.resource.DiscreteResourceCodec;
 import org.onosproject.net.resource.DiscreteResourceId;
 import org.onosproject.net.resource.ResourceAllocation;
 import org.onosproject.net.resource.ResourceConsumerId;
+import org.onosproject.net.table.FlowTableId;//add on 4/21
 import org.onosproject.security.Permission;
 import org.onosproject.store.Timestamp;
 import org.onosproject.store.primitives.MapUpdate;
@@ -812,6 +824,8 @@ public final class KryoNamespaces {
             .register(OFActionCounter.class)
             .register(OFActionType.class)
             .register(OFInstructionType.class)
+            .register(FlowTableId.class)//add on 4/21
+            .register(OFTableType .class)//add on 4/22
             .build();
 
 

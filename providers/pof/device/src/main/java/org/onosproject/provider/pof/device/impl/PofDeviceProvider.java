@@ -21,7 +21,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.onlab.packet.ChassisId;
 import org.onlab.util.HexString;
-import org.onosproject.cfg.ComponentConfigService;
+
+import org.onosproject.cfg.ComponentConfigService;//modefied on 4/12
+
 import org.onosproject.floodlightpof.protocol.OFError;
 import org.onosproject.floodlightpof.protocol.OFMessage;
 import org.onosproject.floodlightpof.protocol.OFPhysicalPort;
@@ -37,25 +39,26 @@ import org.onosproject.net.MastershipRole;
 import org.onosproject.net.Port;
 import org.onosproject.net.PortNumber;
 import org.onosproject.net.SparseAnnotations;
-import org.onosproject.net.device.DefaultDeviceDescription;
-import org.onosproject.net.device.DefaultPortDescription;
-import org.onosproject.net.device.DefaultPortStatistics;
-import org.onosproject.net.device.DeviceDescription;
 import org.onosproject.net.device.DeviceProvider;
 import org.onosproject.net.device.DeviceProviderRegistry;
-import org.onosproject.net.device.DeviceProviderService;
 import org.onosproject.net.device.DeviceService;
-import org.onosproject.net.device.PortDescription;
+import org.onosproject.net.device.DeviceProviderService;
 import org.onosproject.net.device.PortStatistics;
+import org.onosproject.net.device.DefaultPortStatistics;
+import org.onosproject.net.device.DeviceDescription;
+import org.onosproject.net.device.DefaultDeviceDescription;
+import org.onosproject.net.device.PortDescription;
+import org.onosproject.net.device.DefaultPortDescription;
 import org.onosproject.net.provider.AbstractProvider;
 import org.onosproject.net.provider.ProviderId;
-import org.onosproject.net.table.FlowTableStore;
+import org.onosproject.net.table.FlowTableStore;//mofified by zx on 4/13
 import org.onosproject.pof.controller.Dpid;
 import org.onosproject.pof.controller.PofController;
 import org.onosproject.pof.controller.PofEventListener;
 import org.onosproject.pof.controller.PofSwitch;
 import org.onosproject.pof.controller.PofSwitchListener;
 import org.onosproject.pof.controller.RoleState;
+
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -77,25 +80,16 @@ import static org.onlab.util.Tools.get;
 import static org.onosproject.net.DeviceId.deviceId;
 import static org.onosproject.pof.controller.Dpid.dpid;
 import static org.onosproject.pof.controller.Dpid.uri;
-import static org.onosproject.provider.pof.device.impl.OsgiPropertyConstants.POLL_FREQ;
-import static org.onosproject.provider.pof.device.impl.OsgiPropertyConstants.POLL_FREQ_DEFAULT;
 import static org.slf4j.LoggerFactory.getLogger;
 
-/*import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-*/
-/**/
+import static org.onosproject.provider.pof.device.impl.OsgiPropertyConstants.*;
 
 /**
  * Provider which uses an pof controller to detect network
  * infrastructure devices.
  */
 @Component(immediate = true,
-        property={
+        property = {
             POLL_FREQ + ":Integer=" + POLL_FREQ_DEFAULT,
         })
 public class PofDeviceProvider extends AbstractProvider implements DeviceProvider {
@@ -117,8 +111,7 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected ComponentConfigService cfgService;
-
-    /**for test on 4/13*/
+//modified by zx on 4/13
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected FlowTableStore tableStore;
 
@@ -126,9 +119,9 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected MastershipService mastershipService;
 
-   /**no use on 4/13*/
-    /*@Reference(cardinality = ReferenceCardinality.MANDATORY)
-    protected FlowTableStore store;*/
+//modified by zx on 4/13
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
+    protected FlowTableStore store;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected DeviceService deviceService;
@@ -159,7 +152,6 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
             label = "Frequency (in seconds) for polling switch Port statistics")
     private int portStatsPollFrequency = POLL_INTERVAL;*/
 
-    //modified on 4/11
     /** Frequency (in seconds) for polling switch Port statistics. */
     private int portStatsPollFrequency = POLL_FREQ_DEFAULT;
 
@@ -171,21 +163,21 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
      */
     public PofDeviceProvider() {
         super(new ProviderId("pof", "org.onosproject.provider.pof"));
-        log.info("test1");
     }
 
     @Activate
     public void activate(ComponentContext context) {
         log.info("+++++PofDeviceProvider is started~");
         cfgService.registerProperties(getClass());
-        log.info("test1");
+        log.info("+++++registerProperties~");
         providerService = providerRegistry.register(this);
-        log.info("test2");
+        log.info("+++++providerRegistry~");
         controller.addListener(listener);
-        log.info("test3");
+        log.info("+++++addListener~");
         controller.addEventListener(listener);
-        log.info("test4");
+        log.info("+++++addEventListener~");
         connectInitialDevices();
+        log.info("+++++connectInitialDevices~");
 
         modified(context);
 
@@ -205,7 +197,7 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
 
     @Modified
     public void modified(ComponentContext context) {
-        java.util.Dictionary<?, ?> properties = context.getProperties();
+        /*java.util.Dictionary<?, ?> properties = context.getProperties();
         int newPortStatsPollFrequency;
         try {
             String s = get(properties, "PortStatsPollFrequency");
@@ -220,7 +212,7 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
             collectors.values().forEach(psc -> psc.adjustPollInterval(portStatsPollFrequency));
         }
 
-        log.info("Settings: portStatsPollFrequency={}", portStatsPollFrequency);
+        log.info("Settings: portStatsPollFrequency={}", portStatsPollFrequency);*/
         log.info("test for POFDevicePorvider");
     }
 
@@ -399,8 +391,7 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
             providerService.updatePorts(did, buildPortDescriptions(sw));
             pushPortMetrics(dpid, sw.getPorts().values());
 
-            /**test on 4/19*/
-            //tableStore.initializeSwitchStore(did);
+            tableStore.initializeSwitchStore(did);//modified by zx on 4/13
 
             PortStatsCollector psc =
                     new PortStatsCollector(sw, portStatsPollFrequency);
@@ -422,8 +413,7 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
             if (providerService == null) {
                 return;
             }
-            /**test on 4/13*/
-            tableStore.removeSwitchStore(deviceId(uri(dpid)));
+            tableStore.removeSwitchStore(deviceId(uri(dpid)));//modified by zx on 4/13
             providerService.deviceDisconnected(deviceId(uri(dpid)));
 
             PortStatsCollector collector = collectors.remove(dpid);
@@ -458,8 +448,7 @@ public class PofDeviceProvider extends AbstractProvider implements DeviceProvide
         @Override
         public void setTableResource(Dpid dpid, OFFlowTableResource msg) {
             log.debug("TableResource({},{})", dpid, msg.getTableResourcesMap());
-            /**test on 4/13*/
-            tableStore.setFlowTableNoBase(deviceId(uri(dpid)), msg);
+            store.setFlowTableNoBase(deviceId(uri(dpid)), msg);//modified by zx on 4/13
         }
 
         @Override

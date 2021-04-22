@@ -241,12 +241,14 @@ public class NewDistributedFlowTableStore
     protected static final Serializer SERIALIZER = Serializer.using(
             KryoNamespace.newBuilder()
                     .register(DistributedStoreSerializers.STORE_COMMON)
+                    .register(KryoNamespaces.POF)//modified on 4/21
                     .nextId(DistributedStoreSerializers.STORE_CUSTOM_BEGIN)
                     .build()
     );
 
     protected static final KryoNamespace.Builder SERIALIZER_BUILDER = KryoNamespace.newBuilder()
             .register(KryoNamespaces.API)
+            .register(KryoNamespaces.POF)//modified on 4/21
             .register(MastershipBasedTimestamp.class);
 
 
