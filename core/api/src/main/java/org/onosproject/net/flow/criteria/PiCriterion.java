@@ -108,16 +108,6 @@ public final class PiCriterion implements Criterion {
     }
 
     /**
-     * Returns the PiCriterion builder initialized by the given PiCriterion.
-     *
-     * @param piCriterion the input PiCriterion
-     * @return PiCriterion builder
-     */
-    public static Builder builder(PiCriterion piCriterion) {
-        return new Builder(piCriterion);
-    }
-
-    /**
      * PiCriterion Builder.
      */
     @Beta
@@ -128,21 +118,6 @@ public final class PiCriterion implements Criterion {
 
         private Builder() {
             // ban constructor.
-        }
-
-        private Builder(PiCriterion piCriterion) {
-            piCriterion.fieldMatchMap.forEach(((piMatchFieldId, piFieldMatch) -> add(piFieldMatch)));
-        }
-
-        /**
-         * Adds a match field to the builder.
-         *
-         * @param field the field value
-         * @return this
-         */
-        public Builder add(PiFieldMatch field) {
-            fieldMatchMapBuilder.put(field.fieldId(), field);
-            return this;
         }
 
         /**

@@ -107,8 +107,9 @@ PROVIDER_MAP = {
     "//providers/openflow/group:onos-providers-openflow-group": ["seba", "sona"],
     "//providers/openflow/meter:onos-providers-openflow-meter": ["seba", "sona"],
     "//providers/pof/device:onos-providers-pof-device": ["seba", "sona"],
-    #"//providers/pof/packet:onos-providers-pof-packet": ["seba", "sona"],
-    #"//providers/pof/flow:onos-providers-pof-flow": ["seba", "sona"],
+    "//providers/pof/packet:onos-providers-pof-packet": ["seba", "sona"],
+    "//providers/pof/table:onos-providers-pof-table": ["seba", "sona"],#add by zx on 5.8
+    "//providers/pof/flow:onos-providers-pof-flow": ["seba", "sona"],
     "//providers/ovsdb/device:onos-providers-ovsdb-device": ["sona"],
     "//providers/ovsdb/tunnel:onos-providers-ovsdb-tunnel": ["sona"],
     "//providers/p4runtime/packet:onos-providers-p4runtime-packet": ["stratum"],
@@ -328,6 +329,9 @@ APP_MAP = {
     # "//apps/yms:onos-apps-yms-oar": [],
     "//web/gui:onos-web-gui-oar": ["sona", "tost"],
     "//web/gui2:onos-web-gui2-oar": ["stratum", "tost"],
+    #modified on 4/29 by zx
+    "//apps/pof-ovs-action-test-app-pjq:onos-apps-pof-ovs-action-test-app-pjq-oar": [],
+    "//apps/pof-lldp:onos-apps-pof-lldp-oar": [],
 }
 
 #

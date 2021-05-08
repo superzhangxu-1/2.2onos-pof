@@ -18,6 +18,7 @@ package org.onosproject.net.flow;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.GroupId;
 import org.onosproject.net.DeviceId;
+import org.onosproject.net.flow.oldbatch.FlowRuleExtPayLoad;
 import org.onosproject.net.pi.service.PiTranslatable;
 
 /**
@@ -328,4 +329,14 @@ public interface FlowRule extends PiTranslatable {
         FlowRule build();
 
     }
+
+    /**
+     * Returns the third party original flow rule.
+     *
+     * @return FlowRuleExtPayLoad
+     * @deprecated in Junco release
+     */
+    @Deprecated
+    FlowRuleExtPayLoad payLoad();
+
 }

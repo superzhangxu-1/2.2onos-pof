@@ -15,9 +15,9 @@
  */
 package org.onosproject.store.flow.impl;
 
-import java.util.Objects;
-
 import org.onosproject.cluster.NodeId;
+
+import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 

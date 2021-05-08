@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.onosproject.core.GroupId;
 import org.onosproject.net.DeviceId;
+import org.onosproject.net.flow.oldbatch.FlowRuleExtPayLoad;//add by zx on 4/29
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
@@ -116,6 +117,12 @@ public class FlowEntryAdapter implements FlowEntry {
     @Override
     public int hardTimeout() {
         return 0;
+    }
+
+    //added on 4/29 by zx
+    @Override
+    public FlowRuleExtPayLoad payLoad() {
+        return null;
     }
 
     @Override

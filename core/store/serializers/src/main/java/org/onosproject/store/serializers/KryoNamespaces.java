@@ -53,9 +53,8 @@ import org.onosproject.core.DefaultApplicationId;
 import org.onosproject.core.GroupId;
 import org.onosproject.core.Version;
 import org.onosproject.event.Change;
-import org.onosproject.floodlightpof.protocol.OFMatch20;//modified on 4/9
+import org.onosproject.floodlightpof.protocol.OFMatch20;
 import org.onosproject.floodlightpof.protocol.OFMatchX;
-//import org.onosproject.floodlightpof.protocol.action.*;
 import org.onosproject.floodlightpof.protocol.action.OFAction;
 import org.onosproject.floodlightpof.protocol.action.OFActionAddField;
 import org.onosproject.floodlightpof.protocol.action.OFActionCounter;
@@ -65,11 +64,13 @@ import org.onosproject.floodlightpof.protocol.action.OFActionModifyField;
 import org.onosproject.floodlightpof.protocol.action.OFActionOutput;
 import org.onosproject.floodlightpof.protocol.action.OFActionPacketIn;
 import org.onosproject.floodlightpof.protocol.action.OFActionSetField;
-import org.onosproject.floodlightpof.protocol.action.OFActionType;//add on 4/21
+import org.onosproject.floodlightpof.protocol.action.OFActionType;
 import org.onosproject.floodlightpof.protocol.instruction.OFInstructionApplyActions;
 import org.onosproject.floodlightpof.protocol.instruction.OFInstructionGotoTable;
 import org.onosproject.floodlightpof.protocol.instruction.OFInstructionType;
-import org.onosproject.floodlightpof.protocol.table.OFTableType;//add on 4/22
+import org.onosproject.floodlightpof.protocol.table.OFFlowTable;
+import org.onosproject.floodlightpof.protocol.table.OFTableMod;
+import org.onosproject.floodlightpof.protocol.table.OFTableType;
 import org.onosproject.mastership.MastershipTerm;
 import org.onosproject.net.Annotations;
 import org.onosproject.net.ChannelSpacing;
@@ -153,7 +154,7 @@ import org.onosproject.net.flow.criteria.OchSignalTypeCriterion;
 import org.onosproject.net.flow.criteria.OduSignalIdCriterion;
 import org.onosproject.net.flow.criteria.OduSignalTypeCriterion;
 import org.onosproject.net.flow.criteria.PiCriterion;
-//import org.onosproject.net.flow.criteria.PofCriterion;
+import org.onosproject.net.flow.criteria.PofCriterion;
 import org.onosproject.net.flow.criteria.PortCriterion;
 import org.onosproject.net.flow.criteria.SctpPortCriterion;
 import org.onosproject.net.flow.criteria.TcpPortCriterion;
@@ -161,8 +162,8 @@ import org.onosproject.net.flow.criteria.TunnelIdCriterion;
 import org.onosproject.net.flow.criteria.UdpPortCriterion;
 import org.onosproject.net.flow.criteria.VlanIdCriterion;
 import org.onosproject.net.flow.criteria.VlanPcpCriterion;
-//import org.onosproject.net.flow.instructions.DefaultPofActions;
-//import org.onosproject.net.flow.instructions.DefaultPofInstructions;
+import org.onosproject.net.flow.instructions.DefaultPofActions;
+import org.onosproject.net.flow.instructions.DefaultPofInstructions;
 import org.onosproject.net.flow.instructions.ExtensionTreatmentType;
 import org.onosproject.net.flow.instructions.Instructions;
 import org.onosproject.net.flow.instructions.L0ModificationInstruction;
@@ -171,7 +172,7 @@ import org.onosproject.net.flow.instructions.L2ModificationInstruction;
 import org.onosproject.net.flow.instructions.L3ModificationInstruction;
 import org.onosproject.net.flow.instructions.L4ModificationInstruction;
 import org.onosproject.net.flow.instructions.PiInstruction;
-//import org.onosproject.net.flow.instructions.PofInstruction;
+import org.onosproject.net.flow.instructions.PofInstruction;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchEvent;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchOperation;
@@ -299,7 +300,17 @@ import org.onosproject.net.resource.DiscreteResourceCodec;
 import org.onosproject.net.resource.DiscreteResourceId;
 import org.onosproject.net.resource.ResourceAllocation;
 import org.onosproject.net.resource.ResourceConsumerId;
-import org.onosproject.net.table.FlowTableId;//add on 4/21
+import org.onosproject.net.table.CompletedTableBatchOperation;
+import org.onosproject.net.table.DefaultFlowTableEntry;
+import org.onosproject.net.table.FlowTable;
+import org.onosproject.net.table.FlowTableBatchEntry;
+import org.onosproject.net.table.FlowTableBatchEvent;
+import org.onosproject.net.table.FlowTableBatchOperation;
+import org.onosproject.net.table.FlowTableBatchRequest;
+import org.onosproject.net.table.FlowTableEntry;
+import org.onosproject.net.table.FlowTableEvent;
+import org.onosproject.net.table.FlowTableId;
+import org.onosproject.net.table.StoredFlowTableEntry;
 import org.onosproject.security.Permission;
 import org.onosproject.store.Timestamp;
 import org.onosproject.store.primitives.MapUpdate;
@@ -588,7 +599,7 @@ public final class KryoNamespaces {
                     FlowRuleBatchEntry.FlowRuleOperation.class,
                     IntentId.class,
                     IntentState.class,
-                    //Key.class, is abstract
+                    // Key.class, is abstract
                     Key.of(1L, new DefaultApplicationId(0, "bar")).getClass(), //LongKey.class
                     Key.of("foo", new DefaultApplicationId(0, "bar")).getClass(), //StringKey.class
                     Intent.class,
@@ -646,7 +657,21 @@ public final class KryoNamespaces {
                     NextObjective.Type.class,
                     Objective.Operation.class,
                     DefaultObjectiveContext.class,
-                    ObjectiveError.class
+                    ObjectiveError.class,
+                    //FlowTable
+                    CompletedTableBatchOperation.class,
+                    DefaultFlowTableEntry.class,
+                    FlowTable.class,
+                    FlowTableBatchEntry.class,
+                    FlowTableBatchEntry.FlowTableOperation.class,
+                    FlowTableBatchEvent.class,
+                    FlowTableBatchOperation.class,
+                    FlowTableBatchRequest.class,
+                    FlowTableEntry.class,
+                    FlowTableEvent.class,
+                    FlowTableId.class,
+                    FlowTableEntry.FlowTableState.class,
+                    StoredFlowTableEntry.class
             )
             .register(new DefaultApplicationIdSerializer(), DefaultApplicationId.class)
             .register(new UriSerializer(), URI.class)
@@ -792,23 +817,23 @@ public final class KryoNamespaces {
     public static final int POF_MAX_SIZE = 549;
     public static final KryoNamespace POF = KryoNamespace.newBuilder()
             .register(API)
-            //.register(PofCriterion.class)
-            //.register(DefaultPofActions.PofActionOutput.class)
-            //.register(DefaultPofActions.PofActionAddField.class)
-            //.register(DefaultPofActions.PofActionDeleteField.class)
-            //.register(DefaultPofActions.PofActionPacketIn.class)
-            //.register(DefaultPofActions.PofActionType.class)
-            //.register(DefaultPofActions.PofActionDrop.class)
-            //.register(DefaultPofActions.PofActionModifyField.class)
-            //.register(DefaultPofActions.PofActionCounter.class)
-            //.register(DefaultPofActions.PofActionSetField.class)
-            /*.register(PofInstruction.PofInstructionType.class)
+            .register(PofCriterion.class)
+            .register(DefaultPofActions.PofActionOutput.class)
+            .register(DefaultPofActions.PofActionAddField.class)
+            .register(DefaultPofActions.PofActionDeleteField.class)
+            .register(DefaultPofActions.PofActionPacketIn.class)
+            .register(DefaultPofActions.PofActionType.class)
+            .register(DefaultPofActions.PofActionDrop.class)
+            .register(DefaultPofActions.PofActionModifyField.class)
+            .register(DefaultPofActions.PofActionCounter.class)
+            .register(DefaultPofActions.PofActionSetField.class)
+            .register(PofInstruction.PofInstructionType.class)
             .register(DefaultPofInstructions.PofInstructionApplyActions.class)
             .register(DefaultPofInstructions.PofInstructionCalcField.class)
             .register(DefaultPofInstructions.PofInstructionGotoDirectTable.class)
             .register(DefaultPofInstructions.PofInstructionGotoTable.class)
             .register(DefaultPofInstructions.PofInstructionWriteMetadata.class)
-            .register(DefaultPofInstructions.PofInstructionWriteMetadataFromPacket.class)*/
+            .register(DefaultPofInstructions.PofInstructionWriteMetadataFromPacket.class)
             .register(OFInstructionApplyActions.class)
             .register(OFInstructionGotoTable.class)
             .register(OFAction.class)
@@ -824,8 +849,10 @@ public final class KryoNamespaces {
             .register(OFActionCounter.class)
             .register(OFActionType.class)
             .register(OFInstructionType.class)
-            .register(FlowTableId.class)//add on 4/21
-            .register(OFTableType .class)//add on 4/22
+            .register(OFTableType.class)
+            .register(OFFlowTable.class)
+            .register(OFTableMod.class)
+            .register(OFTableMod.OFTableModCmd.class)
             .build();
 
 

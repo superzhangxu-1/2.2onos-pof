@@ -15,9 +15,9 @@
  */
 package org.onosproject.store.flow.impl;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.onosproject.store.LogicalTimestamp;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Logical clock.

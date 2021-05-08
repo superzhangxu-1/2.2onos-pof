@@ -22,6 +22,7 @@ import com.google.common.hash.Hashing;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.GroupId;
 import org.onosproject.net.DeviceId;
+import org.onosproject.net.flow.oldbatch.FlowRuleExtPayLoad;
 
 import java.util.Objects;
 
@@ -51,8 +52,9 @@ public class DefaultFlowRule implements FlowRule {
     private final FlowRemoveReason reason;
     private final GroupId groupId;
 
-    private final TableId tableId;
+    private final TableId tableId;;
 
+    private final FlowRuleExtPayLoad payLoad ;
     /**
      * Creates a new flow rule from an existing rule.
      *
@@ -72,6 +74,7 @@ public class DefaultFlowRule implements FlowRule {
         this.permanent = rule.isPermanent();
         this.created = System.currentTimeMillis();
         this.tableId = rule.table();
+        this.payLoad = rule.payLoad();
     }
 
     private DefaultFlowRule(DeviceId deviceId, TrafficSelector selector,
@@ -95,7 +98,11 @@ public class DefaultFlowRule implements FlowRule {
 
         //FIXME: fields below will be removed.
         this.groupId = new GroupId(0);
+        this.payLoad = null;
+
     }
+
+
 
     @Override
     public FlowId id() {
@@ -333,6 +340,11 @@ public class DefaultFlowRule implements FlowRule {
             return this;
         }
 
+
+
+
+
+
         @Override
         public FlowRule build() {
             FlowId localFlowId;
@@ -381,5 +393,10 @@ public class DefaultFlowRule implements FlowRule {
 
             return hashCode.asInt();
         }
+    }
+
+    @Override//add by zx
+    public FlowRuleExtPayLoad payLoad() {
+        return payLoad;
     }
 }

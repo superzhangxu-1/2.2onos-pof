@@ -16,11 +16,6 @@
 package org.onosproject.provider.pof.message.impl;
 
 import com.google.common.collect.Maps;
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.onlab.metrics.MetricsService;
 import org.onlab.util.SharedScheduledExecutorService;
 import org.onlab.util.SharedScheduledExecutors;
@@ -40,6 +35,11 @@ import org.onosproject.pof.controller.PofEventListener;
 import org.onosproject.pof.controller.PofSwitch;
 import org.onosproject.pof.controller.PofSwitchListener;
 import org.onosproject.pof.controller.RoleState;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -50,6 +50,15 @@ import static org.onosproject.net.DeviceId.deviceId;
 import static org.onosproject.pof.controller.Dpid.uri;
 import static org.slf4j.LoggerFactory.getLogger;
 
+/*
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+
+ */
+
 /**
  * Provider which uses an POF controller to collect control message.
  */
@@ -59,13 +68,13 @@ public class PofControlMessageProvider extends AbstractProvider
 
     private final Logger log = getLogger(getClass());
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected ControlMessageProviderRegistry providerRegistry;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected PofController controller;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected MetricsService metricsService;
 
     private ControlMessageProviderService providerService;
@@ -95,17 +104,18 @@ public class PofControlMessageProvider extends AbstractProvider
     @Activate
     protected void activate() {
         providerService = providerRegistry.register(this);
-
+        log.info("Started1");
         // listens all OpenFlow device related events
         controller.addListener(listener);
-
+        log.info("Started2");
         // listens all OpenFlow incoming message events
         controller.addEventListener(inMsgListener);
+        log.info("Started3");
         controller.monitorAllEvents(true);
-
+        log.info("Started4");
         // listens all OpenFlow outgoing message events
         controller.getSwitches().forEach(sw -> sw.addEventListener(outMsgListener));
-
+        log.info("Started5");
         executor = SharedScheduledExecutors.getSingleThreadExecutor();
 
         connectInitialDevices();

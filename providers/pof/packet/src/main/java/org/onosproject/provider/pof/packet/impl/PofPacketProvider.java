@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 package org.onosproject.provider.pof.packet.impl;
-
+/*
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
+*/
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.onosproject.floodlightpof.protocol.OFPacketOut;
 import org.onosproject.floodlightpof.protocol.OFType;
 import org.onosproject.floodlightpof.protocol.action.OFAction;
@@ -62,10 +69,10 @@ public class PofPacketProvider extends AbstractProvider implements PacketProvide
 
     private final Logger log = getLogger(getClass());
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected PacketProviderRegistry providerRegistry;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected PofController controller;
 
     private PacketProviderService providerService;
@@ -144,7 +151,7 @@ public class PofPacketProvider extends AbstractProvider implements PacketProvide
         pktout.setLength((short) 2360);
         pktout.setType(OFType.PACKET_OUT);
         pktout.setBufferId(-1);
-        pktout.setInPort(0xfffd) /* tsf: send to controller: OFPP_CONTROLLER=0xfffd, defined in ovs. */
+        pktout.setInPort(65535)
                 .setActionFactory(sw.factory());
         pktout.setActionsLength((short) actionList.size());
         pktout.setActions(actionList);
@@ -169,7 +176,7 @@ public class PofPacketProvider extends AbstractProvider implements PacketProvide
             DefaultOutboundPacket outPkt = null;
             if (!pktCtx.isBuffered()) {
                 outPkt = new DefaultOutboundPacket(id, null,
-                        ByteBuffer.wrap(pktCtx.unparsed()));
+                        ByteBuffer.wrap(pktCtx.unparsed()));//pktin's raw data
             }
 
             PofCorePacketContext corePktCtx =

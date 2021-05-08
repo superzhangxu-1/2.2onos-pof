@@ -15,24 +15,6 @@
 */
 package org.onosproject.store.flow.impl;
 
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
@@ -62,14 +44,18 @@ import org.onosproject.net.flow.FlowRuleEvent.Type;
 import org.onosproject.net.flow.FlowRuleService;
 import org.onosproject.net.flow.FlowRuleStore;
 import org.onosproject.net.flow.FlowRuleStoreDelegate;
-import org.onosproject.net.flow.StoredFlowEntry;
 import org.onosproject.net.flow.FlowRuleStoreException;
+import org.onosproject.net.flow.StoredFlowEntry;
 import org.onosproject.net.flow.TableStatisticsEntry;
+import org.onosproject.net.flow.criteria.Criterion;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry.FlowRuleOperation;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchEvent;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchOperation;
 import org.onosproject.net.flow.oldbatch.FlowRuleBatchRequest;
+import org.onosproject.net.table.FlowTable;
+import org.onosproject.net.table.FlowTableId;
+import org.onosproject.net.table.FlowTableStore;
 import org.onosproject.persistence.PersistenceService;
 import org.onosproject.store.AbstractStore;
 import org.onosproject.store.cluster.messaging.ClusterCommunicationService;
@@ -99,21 +85,33 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static org.onlab.util.Tools.get;
 import static org.onlab.util.Tools.groupedThreads;
 import static org.onosproject.net.flow.FlowRuleEvent.Type.RULE_REMOVED;
-import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.APPLY_BATCH_FLOWS;
-import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.FLOW_TABLE_BACKUP;
-import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.GET_DEVICE_FLOW_COUNT;
-import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.GET_FLOW_ENTRY;
-import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.REMOTE_APPLY_COMPLETED;
-import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.REMOVE_FLOW_ENTRY;
-import static org.slf4j.LoggerFactory.getLogger;
-
 import static org.onosproject.store.OsgiPropertyConstants.*;
+import static org.onosproject.store.flow.impl.ECFlowRuleStoreMessageSubjects.*;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Manages inventory of flow rules using a distributed state management protocol.
@@ -179,6 +177,10 @@ public class ECFlowRuleStore
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected PersistenceService persistenceService;
 
+    //added on 4/18
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
+    protected FlowTableStore flowTableStore;
+
     private Map<Long, NodeId> pendingResponses = Maps.newConcurrentMap();
     private ExecutorService messageHandlingExecutor;
     private ExecutorService eventHandler;
@@ -192,9 +194,10 @@ public class ECFlowRuleStore
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected StorageService storageService;
-
+    //TODO 1 4/18
     protected final Serializer serializer = Serializer.using(KryoNamespace.newBuilder()
         .register(KryoNamespaces.API)
+        .register(KryoNamespaces.POF)
         .register(BucketId.class)
         .register(FlowBucket.class)
         .register(ImmutablePair.class)
@@ -202,6 +205,7 @@ public class ECFlowRuleStore
 
     protected final KryoNamespace.Builder serializerBuilder = KryoNamespace.newBuilder()
         .register(KryoNamespaces.API)
+        .register(KryoNamespaces.POF)
         .register(BucketId.class)
         .register(MastershipBasedTimestamp.class);
 
@@ -229,12 +233,11 @@ public class ECFlowRuleStore
         messageHandlingExecutor = Executors.newFixedThreadPool(
             msgHandlerPoolSize, groupedThreads("onos/store/flow", "message-handlers", log));
 
-        registerMessageHandlers(messageHandlingExecutor);
 
         mastershipTermLifecycles = storageService.<DeviceId, Long>consistentMapBuilder()
-            .withName("onos-flow-store-terms")
-            .withSerializer(serializer)
-            .buildAsyncMap();
+                .withName("onos-flow-store-terms")
+                .withSerializer(serializer)
+                .buildAsyncMap();    registerMessageHandlers(messageHandlingExecutor);//
 
         deviceTableStats = storageService.<DeviceId, List<TableStatisticsEntry>>eventuallyConsistentMapBuilder()
             .withName("onos-flow-table-stats")
@@ -325,8 +328,12 @@ public class ECFlowRuleStore
         }
         logConfig("Reconfigured");
     }
-
+    // TODO HOW TO UNDERSTAND EACH HANDLER
     private void registerMessageHandlers(ExecutorService executor) {
+        //added on 4/18
+        clusterCommunicator.addSubscriber(
+                GET_DEVICE_FLOW_ENTRIES, serializer::decode, flowTable::getFlowEntries, serializer::encode, executor);
+
         clusterCommunicator.addSubscriber(APPLY_BATCH_FLOWS, new OnStoreBatch(), executor);
         clusterCommunicator.<FlowRuleBatchEvent>addSubscriber(
             REMOTE_APPLY_COMPLETED, serializer::decode, this::notifyDelegate, executor);
@@ -342,6 +349,9 @@ public class ECFlowRuleStore
     }
 
     private void unregisterMessageHandlers() {
+        //added on 4/18
+        clusterCommunicator.removeSubscriber(GET_DEVICE_FLOW_ENTRIES);
+
         clusterCommunicator.removeSubscriber(REMOVE_FLOW_ENTRY);
         clusterCommunicator.removeSubscriber(GET_DEVICE_FLOW_COUNT);
         clusterCommunicator.removeSubscriber(GET_FLOW_ENTRY);
@@ -394,7 +404,7 @@ public class ECFlowRuleStore
     @Override
     public FlowEntry getFlowEntry(FlowRule rule) {
         NodeId master = mastershipService.getMasterFor(rule.deviceId());
-
+        // there is no role info
         if (master == null && deviceService.isAvailable(rule.deviceId())) {
             log.debug("Failed to getFlowEntry: No master for {}", rule.deviceId());
             return null;
@@ -454,10 +464,33 @@ public class ECFlowRuleStore
             return;
         }
 
+        //TODO 添加if POF
         if (Objects.equals(local, master)) {
-            storeBatchInternal(operation);
+            //log.info("judge whether this flowRule belongs to POF");
+            if (deviceId.uri().getScheme().equals("pof")) {
+                log.info("ECFFlowRuleStore for pof flowrulebatchoperation storage");
+                FlowRule flowRule = operation.getOperations().get(0).target();
+                log.info("flowRule is <{}>", flowRule);
+                FlowTable flowTable = flowTableStore.getFlowTableInternal(flowRule.deviceId(),
+                                                                          FlowTableId.valueOf(flowRule.tableId()));
+                log.info("flowRule.deviceId() is <{}>,FlowTableId.valueOf(flowRule.tableId()) is <{}> ",
+                         flowRule.deviceId(),FlowTableId.valueOf(flowRule.tableId()) );
+                log.info("get the flow rule <{}> in flowTable <{}> ", flowRule, flowTable);
+                Set<Criterion> criterions = flowRule.selector().criteria();
+                log.info("criterions is {}", criterions);
+                Optional<Criterion> criterionOptional = criterions.stream()
+                        .filter(criterion -> criterion.type() != Criterion.Type.POF)
+                        .findFirst();
+                if (flowTable != null && !criterionOptional.isPresent()) {
+                    storeBatchInternal(operation);
+                    log.info("successfully get in here");
+                }
+            } else {
+                storeBatchInternal(operation);
+            }
             return;
         }
+
 
         log.trace("Forwarding storeBatch to {}, which is the primary (master) for device {}",
             master, deviceId);
@@ -487,13 +520,16 @@ public class ECFlowRuleStore
         final DeviceId did = operation.deviceId();
         //final Collection<FlowEntry> ft = flowTable.getFlowEntries(did);
         Set<FlowRuleBatchEntry> currentOps = updateStoreInternal(operation);
+        log.info("after the updateStore process,the currentOps(in the term of Set<FlowRuleBatchEntry>) is  <{}>", currentOps);
         if (currentOps.isEmpty()) {
             batchOperationComplete(FlowRuleBatchEvent.completed(
                 new FlowRuleBatchRequest(operation.id(), Collections.emptySet()),
                 new CompletedBatchOperation(true, Collections.emptySet(), did)));
             return;
         }
-
+        log.info("hopefully the FlowRuleBatchEvent is -- {}",
+                 FlowRuleBatchEvent.requested(new FlowRuleBatchRequest(
+                         operation.id(),currentOps), operation.deviceId()));
         notifyDelegate(FlowRuleBatchEvent.requested(new
             FlowRuleBatchRequest(operation.id(),
             currentOps), operation.deviceId()));
@@ -507,17 +543,20 @@ public class ECFlowRuleStore
                     case ADD:
                         entry = new DefaultFlowEntry(op.target());
                         log.debug("Adding flow rule: {}", entry);
+                        log.info("Adding flow rule: {}", entry);
                         flowTable.add(entry);
                         return op;
                     case MODIFY:
                         entry = new DefaultFlowEntry(op.target());
                         log.debug("Updating flow rule: {}", entry);
+                        log.info("Updating flow rule: {}", entry);
                         flowTable.update(entry);
                         return op;
                     case REMOVE:
                         return flowTable.update(op.target(), stored -> {
                             stored.setState(FlowEntryState.PENDING_REMOVE);
                             log.debug("Setting state of rule to pending remove: {}", stored);
+                            log.info("Setting state of rule to pending remove: {}", stored);
                             return op;
                         });
                     default:

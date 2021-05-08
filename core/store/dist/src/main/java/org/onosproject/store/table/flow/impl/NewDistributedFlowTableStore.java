@@ -240,15 +240,14 @@ public class NewDistributedFlowTableStore
 
     protected static final Serializer SERIALIZER = Serializer.using(
             KryoNamespace.newBuilder()
+                    .register(KryoNamespaces.POF)
                     .register(DistributedStoreSerializers.STORE_COMMON)
-                    .register(KryoNamespaces.POF)//modified on 4/21
                     .nextId(DistributedStoreSerializers.STORE_CUSTOM_BEGIN)
                     .build()
     );
 
     protected static final KryoNamespace.Builder SERIALIZER_BUILDER = KryoNamespace.newBuilder()
-            .register(KryoNamespaces.API)
-            .register(KryoNamespaces.POF)//modified on 4/21
+            .register(KryoNamespaces.POF)
             .register(MastershipBasedTimestamp.class);
 
 
@@ -538,10 +537,11 @@ public class NewDistributedFlowTableStore
 
     @Override
     public byte parseToSmallTableId(DeviceId deviceId, int globalTableId) {
-        FlowTableId tableId = FlowTableId.valueOf(globalTableId);//新FlowTable 对象
+        FlowTableId tableId = FlowTableId.valueOf(globalTableId);
 
         if (flowTablesMap.get(deviceId) != null) {
-            FlowTable flowtable = flowTablesMap.get(deviceId).get(tableId);  //返回表项StoredFlowTableEntr？？？？
+            FlowTable flowtable = flowTablesMap.get(deviceId).get(tableId);
+            log.info("Device {} has Storedflowtableentries : {} ", deviceId, flowtable);
             if (flowtable != null) {
                 return flowtable.flowTable().getTableId();//转化为Floodlight对象
             }
@@ -618,7 +618,7 @@ public class NewDistributedFlowTableStore
 
     @Override
     public void deleteFlowEntryCount(DeviceId deviceId, FlowTableId flowTableId) {
-
+        log.info("before, flowEntryCountMap {}",flowEntryCountMap);
         Integer tmp = flowEntryCountMap.get(deviceId).get(flowTableId);
         for(FlowTableId flowTableIdTmp:flowEntryCountMap.get(deviceId).keySet()){
             if(flowTableIdTmp.equals(flowTableId)){
@@ -630,6 +630,7 @@ public class NewDistributedFlowTableStore
         }
 
         flowEntryCountMap.put(deviceId, flowEntryCountTmpMap);
+        log.info("after, flowEntryCountMap {}",flowEntryCountMap);
 
 
     }
@@ -689,8 +690,9 @@ public class NewDistributedFlowTableStore
         log.info("before delete flow entry count");
         deleteFlowEntryCount(deviceId, flowTableId);
         addFreeFlowEntryIds(deviceId, flowTableId, flowEntryId);
+        log.info("flowEntries.get(deviceId).get(flowTableId) is {}",flowEntries.get(deviceId).get(flowTableId));
         if (flowEntries.get(deviceId).get(flowTableId) == null) {
-            log.info("+++++ flow entry map is null!!!");
+            log.info("+++++ flow entry map is null!!!");//FIXME after the removal, the flowEntries.get(deviceId).get(flowTableId) is {} rather than null, and will never get in here
         }
     }
 

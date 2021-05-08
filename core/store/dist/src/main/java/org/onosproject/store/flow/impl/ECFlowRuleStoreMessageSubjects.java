@@ -35,6 +35,10 @@ public final class ECFlowRuleStoreMessageSubjects {
     public static final MessageSubject REMOVE_FLOW_ENTRY
         = new MessageSubject("peer-forward-remove-flow-entry");
 
+    //added on 4/18
+    public static final MessageSubject GET_DEVICE_FLOW_ENTRIES
+            = new MessageSubject("peer-forward-get-device-flow-entries");
+
     public static final MessageSubject REMOTE_APPLY_COMPLETED
         = new MessageSubject("peer-apply-completed");
 

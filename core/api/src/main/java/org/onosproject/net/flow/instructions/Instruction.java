@@ -99,6 +99,16 @@ public interface Instruction {
         EXTENSION,
 
         /**
+         * Signfies that an POF instruction will be used.
+         */
+        POFINSTRUCTION,
+
+        /**
+         * Signfies that an POF action will be used.
+         */
+        POFACTION,
+
+        /**
          * Signifies that statistics will be triggered.
          */
         STAT_TRIGGER

@@ -42,6 +42,7 @@ import org.onosproject.net.flow.criteria.Criterion.Type;
 import org.onosproject.net.flow.instructions.Instruction;
 import org.onosproject.net.flow.instructions.Instructions;
 import org.onosproject.net.flow.instructions.Instructions.MetadataInstruction;
+import org.onosproject.net.flow.oldbatch.FlowRuleExtPayLoad; //add by zx on 4/29
 import org.onosproject.net.link.LinkServiceAdapter;
 import org.onosproject.net.provider.ProviderId;
 import org.onosproject.net.topology.DefaultTopologyEdge;
@@ -510,6 +511,12 @@ public class IntentTestsMocks {
         @Override
         public boolean isPermanent() {
             return false;
+        }
+
+        //added on 4/29 by zx
+        @Override
+        public FlowRuleExtPayLoad payLoad() {
+            return null;
         }
 
         @Override

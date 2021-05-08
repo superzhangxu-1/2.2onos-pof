@@ -15,12 +15,12 @@
  */
 package org.onosproject.net.flow.oldbatch;
 
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.onosproject.net.DeviceId;
+
+import java.util.List;
+import java.util.Set;
 
 @Deprecated
 /**

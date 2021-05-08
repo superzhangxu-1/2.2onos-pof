@@ -15,12 +15,8 @@
  */
 package org.onosproject.net.flow;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.onlab.packet.EthType;
@@ -36,10 +32,13 @@ import org.onosproject.net.flow.instructions.ExtensionTreatment;
 import org.onosproject.net.flow.instructions.Instruction;
 import org.onosproject.net.flow.instructions.Instructions;
 import org.onosproject.net.meter.MeterId;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import org.onosproject.net.pi.runtime.PiTableAction;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -271,6 +270,8 @@ public final class DefaultTrafficTreatment implements TrafficTreatment {
                 case L2MODIFICATION:
                 case L3MODIFICATION:
                 case L4MODIFICATION:
+                case POFINSTRUCTION:
+                case POFACTION:
                 case PROTOCOL_INDEPENDENT:
                 case EXTENSION:
                     current.add(instruction);

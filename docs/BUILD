@@ -70,6 +70,8 @@ INTERNAL_SOURCES = [
     "//providers/openflow/meter:onos-providers-openflow-meter-sources",
     #add by zx
     "//providers/pof/device:onos-providers-pof-device-sources",
+    "//providers/pof/packet:onos-providers-pof-packet-sources",
+    "//providers/pof/flow:onos-providers-pof-flow-sources",
     "//providers/ovsdb/device:onos-providers-ovsdb-device-sources",
     "//providers/ovsdb/tunnel:onos-providers-ovsdb-tunnel-sources",
     "//providers/rest/device:onos-providers-rest-device-sources",

@@ -15,9 +15,9 @@
  */
 package org.onosproject.store.flow.impl;
 
-import java.util.Objects;
-
 import org.onosproject.store.LogicalTimestamp;
+
+import java.util.Objects;
 
 /**
  * Flow bucket digest.

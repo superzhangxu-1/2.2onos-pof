@@ -223,6 +223,9 @@ public interface Criterion {
         /** Extension criterion. */
         EXTENSION,
 
+        /** POF criterion. */
+        POF,
+
         /** An empty criterion. */
         DUMMY
     }

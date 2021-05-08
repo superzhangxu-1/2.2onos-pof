@@ -54,7 +54,7 @@ public final class PortCriterion implements Criterion {
 
     @Override
     public String toString() {
-        return type().toString() + SEPARATOR + port.toStringWithoutName();
+        return type().toString() + SEPARATOR + port;
     }
 
     @Override

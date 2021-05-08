@@ -3,8 +3,9 @@ BUNDLES = [
     "//protocols/pof/api:onos-protocols-pof-api",
     "//protocols/pof/ctl:onos-protocols-pof-ctl",
     "//providers/pof/device:onos-providers-pof-device",
-	#"//providers/pof/packet:onos-providers-pof-packet",
-    #"//providers/pof/flow:onos-providers-pof-flow",
+	"//providers/pof/packet:onos-providers-pof-packet",
+    "//providers/pof/flow:onos-providers-pof-flow",
+    "//providers/pof/table:onos-providers-pof-table",
 ]
 
 APPS = [

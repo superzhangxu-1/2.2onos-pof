@@ -17,16 +17,8 @@ package org.onosproject.provider.pof.flow.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Sets;
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Modified;
-import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.floodlightpof.protocol.OFError;
@@ -38,12 +30,12 @@ import org.onosproject.net.DeviceId;
 import org.onosproject.net.driver.DriverService;
 import org.onosproject.net.flow.CompletedBatchOperation;
 import org.onosproject.net.flow.FlowRule;
-import org.onosproject.net.flow.FlowRuleBatchEntry;
-import org.onosproject.net.flow.FlowRuleBatchOperation;
-import org.onosproject.net.flow.FlowRuleExtPayLoad;
 import org.onosproject.net.flow.FlowRuleProvider;
 import org.onosproject.net.flow.FlowRuleProviderRegistry;
 import org.onosproject.net.flow.FlowRuleProviderService;
+import org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry;
+import org.onosproject.net.flow.oldbatch.FlowRuleBatchOperation;
+import org.onosproject.net.flow.oldbatch.FlowRuleExtPayLoad;
 import org.onosproject.net.provider.AbstractProvider;
 import org.onosproject.net.provider.ProviderId;
 import org.onosproject.net.table.FlowTableStore;
@@ -55,6 +47,12 @@ import org.onosproject.pof.controller.PofSwitchListener;
 import org.onosproject.pof.controller.RoleState;
 import org.onosproject.pof.controller.ThirdPartyMessage;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 
 import java.util.Collections;
@@ -67,42 +65,57 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.onlab.util.Tools.get;
+import static org.onosproject.provider.pof.flow.impl.OsgiPropertyConstants.*;
 import static org.slf4j.LoggerFactory.getLogger;
+
+/*
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+
+ */
+//
+
+//import org.onosproject.net.flow.FlowRuleExtPayLoad;
 
 
 /**
- * Provider which uses an OpenFlow controller to detect network end-station
+ * Provider which uses an POF controller to detect network end-station
  * hosts.
  */
-@Component(immediate = true)
+@Component(immediate = true,
+        property = {
+                POLL_FREQUENCY + ":Integer=" + DEFAULT_POLL_FREQUENCY,
+                ADAPTIVE_FLOW_SAMPLING + ":Boolean=" + DEFAULT_ADAPTIVE_FLOW_SAMPLING,
+        })
 public class PofRuleProvider extends AbstractProvider
         implements FlowRuleProvider {
 
     private final Logger log = getLogger(getClass());
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected FlowRuleProviderRegistry providerRegistry;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected PofController controller;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected ComponentConfigService cfgService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected DriverService driverService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected FlowTableStore flowTableStore;
 
-    private static final int DEFAULT_POLL_FREQUENCY = 5;
-    @Property(name = "flowPollFrequency", intValue = DEFAULT_POLL_FREQUENCY,
-            label = "Frequency (in seconds) for polling flow statistics")
+    /**"Frequency (in seconds) for polling flow statistics")*/
     private int flowPollFrequency = DEFAULT_POLL_FREQUENCY;
 
-    private static final boolean DEFAULT_ADAPTIVE_FLOW_SAMPLING = false;
-    @Property(name = "adaptiveFlowSampling", boolValue = DEFAULT_ADAPTIVE_FLOW_SAMPLING,
-            label = "Adaptive Flow Sampling is on or off")
+    /** Adaptive Flow Sampling is on or off")*/
     private boolean adaptiveFlowSampling = DEFAULT_ADAPTIVE_FLOW_SAMPLING;
 
     private FlowRuleProviderService providerService;
@@ -113,7 +126,7 @@ public class PofRuleProvider extends AbstractProvider
 
 
     /**
-     * Creates an OpenFlow host provider.
+     * Creates an POF host provider.
      */
     public PofRuleProvider() {
         super(new ProviderId("pof", "org.onosproject.provider.pof.flow"));
@@ -121,7 +134,7 @@ public class PofRuleProvider extends AbstractProvider
 
     @Activate
     public void activate(ComponentContext context) {
-
+        log.info("****start our own PofRuleProvider*****");
         cfgService.registerProperties(getClass());
         providerService = providerRegistry.register(this);
         controller.addListener(listener);
@@ -130,7 +143,7 @@ public class PofRuleProvider extends AbstractProvider
         modified(context);
 
         pendingBatches = createBatchCache();
-
+        log.info("****start up our own PofRuleProvider*****");
         //createCollectors();
 
 
@@ -151,7 +164,7 @@ public class PofRuleProvider extends AbstractProvider
         Dictionary<?, ?> properties = context.getProperties();
         int newFlowPollFrequency;
         try {
-            String s = get(properties, "flowPollFrequency");
+            String s = get(properties, POLL_FREQUENCY);
             newFlowPollFrequency = isNullOrEmpty(s) ? flowPollFrequency : Integer.parseInt(s.trim());
 
         } catch (NumberFormatException | ClassCastException e) {
@@ -166,7 +179,7 @@ public class PofRuleProvider extends AbstractProvider
         log.info("Settings: flowPollFrequency={}", flowPollFrequency);
 
         boolean newAdaptiveFlowSampling;
-        String s = get(properties, "adaptiveFlowSampling");
+        String s = get(properties, ADAPTIVE_FLOW_SAMPLING);
         newAdaptiveFlowSampling = isNullOrEmpty(s) ? adaptiveFlowSampling : Boolean.parseBoolean(s.trim());
 
         if (newAdaptiveFlowSampling != adaptiveFlowSampling) {
@@ -256,6 +269,9 @@ public class PofRuleProvider extends AbstractProvider
             return;
         }
 
+        /**
+         * REMOVE ON 4/16
+         */
         FlowRuleExtPayLoad flowRuleExtPayLoad = flowRule.payLoad();
         if (hasPayload(flowRuleExtPayLoad)) {
             OFMessage msg = new ThirdPartyMessage(flowRuleExtPayLoad.payLoad());
@@ -298,6 +314,10 @@ public class PofRuleProvider extends AbstractProvider
         }
 
         log.info("delFlowEntry : {}", flowRule.id().toString());
+        /**
+         * REMOVE on 4/16
+         */
+
         FlowRuleExtPayLoad flowRuleExtPayLoad = flowRule.payLoad();
         if (hasPayload(flowRuleExtPayLoad)) {
             OFMessage msg = new ThirdPartyMessage(flowRuleExtPayLoad.payLoad());
@@ -341,6 +361,10 @@ public class PofRuleProvider extends AbstractProvider
         for (FlowRuleBatchEntry fbe : batch.getOperations()) {
             // flow is the third party privacy flow
 
+            /**
+             * REMOVE ON 4/16
+             */
+
             FlowRuleExtPayLoad flowRuleExtPayLoad = fbe.target().payLoad();
 
             if (hasPayload(flowRuleExtPayLoad)) {
@@ -349,6 +373,7 @@ public class PofRuleProvider extends AbstractProvider
                 sw.sendMsg(msg);
                 continue;
             }
+
             //log.info("+++++ before flowModBuilder");
             FlowModBuilder builder =
                     FlowModBuilder.builder(fbe.target(), sw.factory(), flowTableStore,
@@ -386,6 +411,7 @@ public class PofRuleProvider extends AbstractProvider
 
     }
 
+    /**REMOVE ON 4/16*/
     private boolean hasPayload(FlowRuleExtPayLoad flowRuleExtPayLoad) {
         return flowRuleExtPayLoad != null &&
                 flowRuleExtPayLoad.payLoad() != null &&

@@ -15,9 +15,9 @@
  */
 package org.onosproject.store.flow.impl;
 
-import java.util.Objects;
-
 import org.onosproject.net.DeviceId;
+
+import java.util.Objects;
 
 /**
  * Represents a distinct device flow bucket.

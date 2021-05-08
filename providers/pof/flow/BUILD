@@ -1,6 +1,5 @@
 COMPILE_DEPS = CORE_DEPS + NETTY + [
-    "@openflowj//jar",
-	"@floodlightpof//jar",
+    "@floodlightpof//jar",
     "//protocols/pof/api:onos-protocols-pof-api",
 ]
 

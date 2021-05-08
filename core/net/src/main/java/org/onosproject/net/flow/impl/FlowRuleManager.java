@@ -268,7 +268,7 @@ public class FlowRuleManager
                          fallbackFlowPollFrequency);
             } catch (NumberFormatException e) {
                 log.warn("Configured fallbackFlowPollFrequency value '{}' " +
-                                 "is not a number, using current value of {} seconds",
+                                 "is not a number, using current value of  seconds",
                          fallbackFlowPollFrequency);
             }
         }
@@ -327,6 +327,7 @@ public class FlowRuleManager
         for (FlowRule flowRule : flowRules) {
             builder.remove(flowRule);
         }
+
         apply(builder.build());
     }
 

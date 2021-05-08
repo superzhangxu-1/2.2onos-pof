@@ -26,6 +26,7 @@ import com.google.common.collect.Sets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.onosproject.cfg.ComponentConfigService;
+import org.onosproject.core.ApplicationId;//add by zx on 4.29
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.driver.DefaultDriverData;
 import org.onosproject.net.driver.DefaultDriverHandler;
@@ -374,6 +375,12 @@ public class OpenFlowRuleProvider extends AbstractProvider
         for (FlowRule flowRule : flowRules) {
             removeRule(flowRule);
         }
+    }
+    //added on 4/29 by zx
+    @Override
+    public void removeRulesById(ApplicationId id, FlowRule... flowRules) {
+        // TODO: optimize using the ApplicationId
+        removeFlowRule(flowRules);
     }
 
     private void removeRule(FlowRule flowRule) {

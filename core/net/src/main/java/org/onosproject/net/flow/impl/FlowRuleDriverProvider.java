@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import org.onosproject.core.ApplicationId;
 import org.onosproject.mastership.MastershipService;
 import org.onosproject.net.Device;
 import org.onosproject.net.DeviceId;
@@ -53,9 +54,7 @@ import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static org.onlab.util.Tools.groupedThreads;
 import static org.onosproject.net.device.DeviceEvent.Type.DEVICE_ADDED;
 import static org.onosproject.net.device.DeviceEvent.Type.DEVICE_AVAILABILITY_CHANGED;
-import static org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry.FlowRuleOperation.ADD;
-import static org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry.FlowRuleOperation.MODIFY;
-import static org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry.FlowRuleOperation.REMOVE;
+import static org.onosproject.net.flow.oldbatch.FlowRuleBatchEntry.FlowRuleOperation.*;
 
 /**
  * Driver-based flow rule provider.
@@ -126,6 +125,12 @@ class FlowRuleDriverProvider extends AbstractProvider implements FlowRuleProvide
     @Override
     public void removeFlowRule(FlowRule... flowRules) {
         rulesByDevice(flowRules).asMap().forEach(this::removeFlowRules);
+    }
+
+    //added on 4/15
+    @Override
+    public void removeRulesById(ApplicationId id, FlowRule... flowRules) {
+        removeFlowRule(flowRules);
     }
 
     @Override

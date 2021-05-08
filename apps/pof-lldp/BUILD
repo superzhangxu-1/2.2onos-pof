@@ -1,5 +1,5 @@
 COMPILE_DEPS = CORE_DEPS + JACKSON + [
-    @floodlight//jar,
+    "@floodlightpof//jar",
     "//protocols/pof/api:onos-protocols-pof-api",
 ]
 

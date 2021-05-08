@@ -15,10 +15,10 @@
  */
 package org.onosproject.store.flow.impl;
 
+import org.onosproject.cluster.NodeId;
+
 import java.util.List;
 import java.util.Objects;
-
-import org.onosproject.cluster.NodeId;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 

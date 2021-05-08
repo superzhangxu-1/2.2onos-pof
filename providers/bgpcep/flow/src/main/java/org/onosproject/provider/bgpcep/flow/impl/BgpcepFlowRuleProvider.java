@@ -15,6 +15,7 @@
  */
 package org.onosproject.provider.bgpcep.flow.impl;
 
+import org.onosproject.core.ApplicationId;//add by zx on 4.29
 import org.onosproject.net.flow.FlowRule;
 import org.onosproject.net.flow.FlowRuleProvider;
 import org.onosproject.net.flow.FlowRuleProviderRegistry;
@@ -74,6 +75,13 @@ public class BgpcepFlowRuleProvider extends AbstractProvider
 
     @Override
     public void removeFlowRule(FlowRule... flowRules) {
+        // TODO Auto-generated method stub
+
+    }
+
+    //added on 4/29 by zx
+    @Override
+    public void removeRulesById(ApplicationId id, FlowRule... flowRules) {
         // TODO Auto-generated method stub
 
     }

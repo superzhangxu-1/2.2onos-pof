@@ -15,10 +15,10 @@
  */
 package org.onosproject.store.flow;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.onosproject.event.AbstractEvent;
 import org.onosproject.net.DeviceId;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Describes a device replicainfo event.
