@@ -332,6 +332,7 @@ APP_MAP = {
     #modified on 4/29 by zx
     "//apps/pof-ovs-action-test-app-pjq:onos-apps-pof-ovs-action-test-app-pjq-oar": [],
     "//apps/pof-lldp:onos-apps-pof-lldp-oar": [],
+    "//apps/pof-flowtest-app:onos-apps-pof-flowtest-app-oar": [],
 }
 
 #
